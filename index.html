@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>استبيان أسلوب المونتاج</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+    body {
+      background: #f0f9ff; color: #1e293b; overflow-x: hidden;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 2rem 0;
+    }
+    .glass-card{
+      background: rgba(255,255,255,.7);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-radius: 24px; border: 1px solid rgba(255,255,255,.9);
+      box-shadow: 0 8px 32px rgba(59,130,246,.06), 0 1px 3px rgba(0,0,0,.04);
+    }
+    .badge{
+      background: linear-gradient(135deg,#3b82f6,#1d4ed8);
+      color:#fff; font-weight:600; padding:4px 16px; border-radius:20px; font-size:.85rem;
+      box-shadow: 0 2px 8px rgba(59,130,246,.25);
+    }
+    .blob{ position:fixed; border-radius:50%; filter: blur(80px); opacity:.4; pointer-events:none; z-index:0; }
+    .blob-1{ width:500px; height:500px; background: rgba(59,130,246,.15); top:-100px; right:-150px; }
+    .blob-2{ width:400px; height:400px; background: rgba(29,78,216,.10); bottom:20%; left:-100px; }
+
+    .form-progress{ display:flex; align-items:flex-start; justify-content:center; margin-bottom:2.5rem; }
+    .form-progress-step{ display:flex; flex-direction:column; align-items:center; z-index:2; }
+    .step-circle{
+      width:46px; height:46px; border-radius:50%;
+      background: rgba(59,130,246,.08); border:2.5px solid rgba(59,130,246,.15);
+      display:flex; align-items:center; justify-content:center; font-weight:700; color:#94a3b8;
+      transition: .25s ease;
+    }
+    .form-progress-step.active .step-circle{
+      background: linear-gradient(135deg,#3b82f6,#1d4ed8); border-color:#3b82f6; color:#fff;
+    }
+    .form-progress-step.completed .step-circle{
+      background: linear-gradient(135deg,#10b981,#059669); border-color:#10b981; color:#fff;
+    }
+    .step-label{ font-size:.72rem; color:#94a3b8; margin-top:8px; font-weight:500; white-space:nowrap; }
+    .form-progress-step.active .step-label{ color:#3b82f6; font-weight:700; }
+    .form-progress-step.completed .step-label{ color:#10b981; font-weight:600; }
+    .form-progress-line{
+      height:3px; flex:1; background: rgba(59,130,246,.10); position:relative; top:22px;
+      border-radius:3px; min-width:20px;
+    }
+    .form-progress-line.filled{ background: linear-gradient(90deg,#10b981,#3b82f6); }
+
+    .form-step{ display:none; }
+    .form-step.active{ display:block; }
+
+    .radio-card-group{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    .radio-card{ position:relative; cursor:pointer; }
+    .radio-card input{ position:absolute; opacity:0; pointer-events:none; }
+    .radio-content{
+      display:flex; align-items:center; gap:12px; padding:18px 20px;
+      background: rgba(255,255,255,.55); border:2px solid rgba(59,130,246,.08);
+      border-radius:16px; transition:.2s ease; font-weight:500; color:#475569;
+    }
+    .radio-card input:checked + .radio-content{
+      border-color:#3b82f6; background: rgba(59,130,246,.07); color:#1d4ed8;
+      box-shadow: 0 4px 18px rgba(59,130,246,.12);
+    }
+    .radio-dot{
+      width:22px; height:22px; border-radius:50%; border:2.5px solid #cbd5e1;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    }
+    .radio-card input:checked + .radio-content .radio-dot{ border-color:#3b82f6; background:#3b82f6; }
+    .radio-card input:checked + .radio-content .radio-dot::after{ content:''; width:8px; height:8px; border-radius:50%; background:#fff; }
+
+    .check-card{ position:relative; cursor:pointer; }
+    .check-card input{ position:absolute; opacity:0; pointer-events:none; }
+    .check-content{
+      display:flex; align-items:center; gap:12px; padding:18px 20px;
+      background: rgba(255,255,255,.55); border:2px solid rgba(59,130,246,.08);
+      border-radius:16px; transition:.2s ease; font-weight:500; color:#475569;
+    }
+    .check-card input:checked + .check-content{
+      border-color:#3b82f6; background: rgba(59,130,246,.07); color:#1d4ed8;
+      box-shadow: 0 4px 18px rgba(59,130,246,.12);
+    }
+    .check-box{
+      width:22px; height:22px; border-radius:8px; border:2.5px solid #cbd5e1;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    }
+    .check-card input:checked + .check-content .check-box{ border-color:#3b82f6; background:#3b82f6; }
+    .check-card input:checked + .check-content .check-box::after{ content:'✓'; color:#fff; font-size:13px; font-weight:800; }
+
+    .form-input,.form-textarea{
+      width:100%; padding:18px 20px; background: rgba(255,255,255,.6);
+      border:2px solid rgba(59,130,246,.08); border-radius:16px;
+      font-size:1rem; color:#1e293b; outline:none; direction:rtl; line-height:1.8;
+    }
+    .form-textarea{ min-height:130px; resize:vertical; }
+    .form-input:focus,.form-textarea:focus{
+      border-color:#3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,.08); background: rgba(255,255,255,.85);
+    }
+
+    .form-label{ display:block; font-weight:700; color:#334155; margin-bottom:14px; font-size:1.05rem; }
+    .form-group-title{
+      font-size:1.35rem; font-weight:700; color:#1e293b; margin-bottom:28px;
+      display:flex; align-items:center; gap:10px; padding-bottom:16px;
+      border-bottom:2px solid rgba(59,130,246,.08);
+    }
+    .form-counter{
+      display:inline-flex; align-items:center; gap:4px; font-size:.8rem; color:#94a3b8; font-weight:500;
+      background: rgba(59,130,246,.05); padding:4px 12px; border-radius:20px;
+    }
+    .form-counter strong{ color:#3b82f6; font-weight:700; }
+
+    .form-btn{
+      padding:14px 32px; border-radius:14px; font-weight:600; font-size:1rem; cursor:pointer;
+      transition:.2s ease; border:none; display:inline-flex; align-items:center; gap:8px;
+    }
+    .form-btn-next{ background: linear-gradient(135deg,#3b82f6,#1d4ed8); color:#fff; }
+    .form-btn-prev{ background: rgba(59,130,246,.06); color:#3b82f6; border:1.5px solid rgba(59,130,246,.12); }
+    .form-btn-send{ background: linear-gradient(135deg,#10b981,#059669); color:#fff; padding:16px 48px; font-size:1.1rem; }
+
+    @media (max-width:640px){
+      .radio-card-group{ grid-template-columns:1fr; }
+      .step-circle{ width:38px; height:38px; }
+      .form-progress-line{ top:18px; }
+      .form-btn{ padding:12px 20px; font-size:.9rem; }
+    }
+  </style>
+</head>
+
+<body class="relative">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <main class="w-full max-w-4xl px-4 md:px-6 relative z-10">
+    <div class="glass-card p-6 md:p-10">
+
+      <div class="text-center mb-10">
+        <span class="badge mb-4 inline-block">نموذج تفاعلي</span>
+        <h1 class="text-3xl font-bold text-blue-700 mb-3">📝 استبيان أسلوب المونتاج</h1>
+        <p class="text-slate-500 text-lg max-w-2xl mx-auto leading-relaxed">
+          يرجى تعبئة هذا الاستبيان لمساعدتنا على فهم رؤيتك بدقة قبل البدء بالمشروع.
+        </p>
+      </div>
+
+      <div class="form-progress">
+        <div class="form-progress-step active" data-pstep="1">
+          <div class="step-circle">1</div>
+          <div class="step-label">التفضيلات</div>
+        </div>
+        <div class="form-progress-line" data-line="1"></div>
+        <div class="form-progress-step" data-pstep="2">
+          <div class="step-circle">2</div>
+          <div class="step-label">ما لا يعجبك</div>
+        </div>
+        <div class="form-progress-line" data-line="2"></div>
+        <div class="form-progress-step" data-pstep="3">
+          <div class="step-circle">3</div>
+          <div class="step-label">المرجعيات</div>
+        </div>
+        <div class="form-progress-line" data-line="3"></div>
+        <div class="form-progress-step" data-pstep="4">
+          <div class="step-circle">4</div>
+          <div class="step-label">الشعور</div>
+        </div>
+        <div class="form-progress-line" data-line="4"></div>
+        <div class="form-progress-step" data-pstep="5">
+          <div class="step-circle">5</div>
+          <div class="step-label">ملاحظات</div>
+        </div>
+      </div>
+
+      <div class="text-center mb-8">
+        <span class="form-counter">الخطوة <strong id="stepCurrent">1</strong> من <strong>5</strong></span>
+      </div>
+
+      <form id="editStyleForm" action="https://formspree.io/f/mnjbrkdo" method="POST">
+        <input type="hidden" name="_subject" value="📥 استبيان أسلوب المونتاج - رد جديد">
+        <input type="hidden" name="_replyto" value="%{email}">
+        <input type="hidden" name="_redirect" value="https://aminellkadaoui.github.io/form/thanks.html">
+        <input type="text" name="_gotcha" style="display:none">
+
+        <!-- STEP 1 -->
+        <div class="form-step active" data-fstep="1">
+          <div class="form-group-title">🎨 تفضيلات أسلوب المونتاج</div>
+
+          <div class="mb-7">
+            <label class="form-label">بريدك الإلكتروني للتواصل</label>
+            <input class="form-input" type="email" name="email" placeholder="example@email.com" required>
+          </div>
+
+          <div class="mb-7">
+            <label class="form-label">إيقاع الفيديو</label>
+            <div class="radio-card-group">
+              <label class="radio-card">
+                <input type="radio" name="pace" value="fast-paced" required>
+                <div class="radio-content"><span class="radio-dot"></span><span>⚡ سريع الإيقاع</span></div>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="pace" value="calm" required>
+                <div class="radio-content"><span class="radio-dot"></span><span>🍃 هادئ ومريح</span></div>
+              </label>
+            </div>
+          </div>
+
+          <div class="mb-7">
+            <label class="form-label">المظهر العام</label>
+            <div class="radio-card-group">
+              <label class="radio-card">
+                <input type="radio" name="polish" value="natural" required>
+                <div class="radio-content"><span class="radio-dot"></span><span>🌿 طبيعي وخام</span></div>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="polish" value="polished" required>
+                <div class="radio-content"><span class="radio-dot"></span><span>✨ مصقول واحترافي</span></div>
+              </label>
+            </div>
+          </div>
+
+          <div class="mb-7">
+            <label class="form-label">النصوص على الشاشة</label>
+            <div class="radio-card-group">
+              <label class="radio-card">
+                <input type="radio" name="captions" value="text-heavy" required>
+                <div class="radio-content"><span class="radio-dot"></span><span>📝 نصوص كثيرة</span></div>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="captions" value="minimal-text" required>
+                <div class="radio-content"><span class="radio-dot"></span><span>💬 نصوص قليلة</span></div>
+              </label>
+            </div>
+          </div>
+
+          <div class="mb-7">
+            <label class="form-label">أسلوب القطع</label>
+            <div class="radio-card-group">
+              <label class="radio-card">
+                <input type="radio" name="cuts" value="more-cuts" required>
+                <div class="radio-content"><span class="radio-dot"></span><span>✂️ قطعات أكثر</span></div>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="cuts" value="longer-shots" required>
+                <div class="radio-content"><span class="radio-dot"></span><span>🎞️ لقطات أطول</span></div>
+              </label>
+            </div>
+          </div>
+
+          <div class="mb-7">
+            <label class="form-label">المؤثرات الصوتية</label>
+            <div class="radio-card-group">
+              <label class="radio-card">
+                <input type="radio" name="sfx" value="sound-effects" required>
+                <div class="radio-content"><span class="radio-dot"></span><span>🔊 مؤثرات صوتية</span></div>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="sfx" value="no-sound-effects" required>
+                <div class="radio-content"><span class="radio-dot"></span><span>🔇 بدون</span></div>
+              </label>
+            </div>
+          </div>
+
+          <div class="mb-7">
+            <label class="form-label">نوع المحتوى البصري</label>
+            <div class="radio-card-group">
+              <label class="radio-card">
+                <input type="radio" name="visual" value="b-roll" required>
+                <div class="radio-content"><span class="radio-dot"></span><span>🎬 B-roll</span></div>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="visual" value="talking-head" required>
+                <div class="radio-content"><span class="radio-dot"></span><span>🗣️ متحدث مباشر</span></div>
+              </label>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label">💭 صف الأسلوب الذي تتخيله</label>
+            <textarea class="form-textarea" name="style_description" rows="5" placeholder="وصف حر..."></textarea>
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="form-step" data-fstep="2">
+          <div class="form-group-title">🚫 فيديوهات لا تعجبك</div>
+          <div class="mb-7">
+            <label class="form-label">🔗 روابط (1–3)</label>
+            <textarea class="form-textarea" name="dislike_links" rows="5" placeholder="كل رابط في سطر..."></textarea>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">❌ ما الذي لم يعجبك؟</label>
+            <textarea class="form-textarea" name="dislike_reasons" rows="6"></textarea>
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="form-step" data-fstep="3">
+          <div class="form-group-title">🎯 فيديوهات مرجعية</div>
+          <div class="mb-7">
+            <label class="form-label">🔗 روابط (3–5)</label>
+            <textarea class="form-textarea" name="reference_links" rows="7" placeholder="كل رابط في سطر..."></textarea>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">✅ ما الذي أعجبك؟</label>
+            <textarea class="form-textarea" name="reference_reasons" rows="7"></textarea>
+          </div>
+        </div>
+
+        <!-- STEP 4 -->
+        <div class="form-step" data-fstep="4">
+          <div class="form-group-title">💫 الشعور المطلوب</div>
+          <div class="mb-7">
+            <label class="form-label">اختر ما يناسبك</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label class="check-card">
+                <input type="checkbox" name="feeling[]" value="motivation">
+                <div class="check-content"><span class="check-box"></span><span>🔥 تحفيز</span></div>
+              </label>
+              <label class="check-card">
+                <input type="checkbox" name="feeling[]" value="trust">
+                <div class="check-content"><span class="check-box"></span><span>🤝 ثقة</span></div>
+              </label>
+              <label class="check-card">
+                <input type="checkbox" name="feeling[]" value="professionalism">
+                <div class="check-content"><span class="check-box"></span><span>💼 احترافية</span></div>
+              </label>
+              <label class="check-card">
+                <input type="checkbox" name="feeling[]" value="clarity">
+                <div class="check-content"><span class="check-box"></span><span>💡 وضوح</span></div>
+              </label>
+              <label class="check-card sm:col-span-2">
+                <input type="checkbox" name="feeling[]" value="simplicity">
+                <div class="check-content"><span class="check-box"></span><span>🎯 بساطة</span></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 5 -->
+        <div class="form-step" data-fstep="5">
+          <div class="form-group-title">📌 ملاحظات إضافية</div>
+          <div class="mb-4">
+            <label class="form-label">💬 أي شيء آخر؟</label>
+            <textarea class="form-textarea" name="additional_notes" rows="10"></textarea>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between mt-10 pt-6 border-t-2 border-blue-50">
+          <div>
+            <button type="button" class="form-btn form-btn-prev" id="formPrev" style="display:none" onclick="formGoStep(-1)">الخطوة السابقة</button>
+          </div>
+          <div>
+            <button type="button" class="form-btn form-btn-next" id="formNext" onclick="formGoStep(1)">الخطوة التالية</button>
+            <button type="submit" class="form-btn form-btn-send" id="formSubmit" style="display:none">📤 إرسال الاستبيان</button>
+          </div>
+        </div>
+      </form>
+
+    </div>
+  </main>
+
+  <script>
+    (function(){
+      let step = 1;
+      const total = 5;
+
+      const prevBtn = document.getElementById('formPrev');
+      const nextBtn = document.getElementById('formNext');
+      const submitBtn = document.getElementById('formSubmit');
+      const stepCurrentEl = document.getElementById('stepCurrent');
+
+      window.formGoStep = function(dir){
+        const next = step + dir;
+        if(next < 1 || next > total) return;
+
+        document.querySelector('.form-step[data-fstep="' + step + '"]').classList.remove('active');
+        document.querySelector('.form-step[data-fstep="' + next + '"]').classList.add('active');
+
+        step = next;
+        refreshUI();
+      };
+
+      function refreshUI(){
+        document.querySelectorAll('.form-progress-step').forEach(function(el){
+          const s = parseInt(el.getAttribute('data-pstep'));
+          el.classList.remove('active','completed');
+          if(s === step) el.classList.add('active');
+          else if(s < step) el.classList.add('completed');
+        });
+
+        document.querySelectorAll('.form-progress-line').forEach(function(el){
+          const l = parseInt(el.getAttribute('data-line'));
+          el.classList.toggle('filled', l < step);
+        });
+
+        stepCurrentEl.textContent = step;
+        prevBtn.style.display = step === 1 ? 'none' : 'inline-flex';
+        nextBtn.style.display = step === total ? 'none' : 'inline-flex';
+        submitBtn.style.display = step === total ? 'inline-flex' : 'none';
+      }
+    })();
+  </script>
+</body>
+</html>
