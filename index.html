@@ -5,349 +5,128 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>استبيان أسلوب المونتاج</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
     * { font-family: 'IBM Plex Sans Arabic', sans-serif; }
     body {
-      background: #f0f9ff;
-      color: #1e293b;
-      overflow-x: hidden;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background: #f0f9ff; color: #1e293b; overflow-x: hidden;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
       padding: 2rem 0;
     }
+    .glass-card{
+      background: rgba(255,255,255,.7);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-radius: 24px; border: 1px solid rgba(255,255,255,.9);
+      box-shadow: 0 8px 32px rgba(59,130,246,.06), 0 1px 3px rgba(0,0,0,.04);
+    }
+    .badge{
+      background: linear-gradient(135deg,#3b82f6,#1d4ed8);
+      color:#fff; font-weight:600; padding:4px 16px; border-radius:20px; font-size:.85rem;
+      box-shadow: 0 2px 8px rgba(59,130,246,.25);
+    }
+    .blob{ position:fixed; border-radius:50%; filter: blur(80px); opacity:.4; pointer-events:none; z-index:0; }
+    .blob-1{ width:500px; height:500px; background: rgba(59,130,246,.15); top:-100px; right:-150px; }
+    .blob-2{ width:400px; height:400px; background: rgba(29,78,216,.10); bottom:20%; left:-100px; }
 
-    .text-glow { text-shadow: 0 0 30px rgba(59, 130, 246, 0.15), 0 0 60px rgba(59, 130, 246, 0.08); }
+    .form-progress{ display:flex; align-items:flex-start; justify-content:center; margin-bottom:2.5rem; }
+    .form-progress-step{ display:flex; flex-direction:column; align-items:center; z-index:2; }
+    .step-circle{
+      width:46px; height:46px; border-radius:50%;
+      background: rgba(59,130,246,.08); border:2.5px solid rgba(59,130,246,.15);
+      display:flex; align-items:center; justify-content:center; font-weight:700; color:#94a3b8;
+      transition: .25s ease;
+    }
+    .form-progress-step.active .step-circle{
+      background: linear-gradient(135deg,#3b82f6,#1d4ed8); border-color:#3b82f6; color:#fff;
+    }
+    .form-progress-step.completed .step-circle{
+      background: linear-gradient(135deg,#10b981,#059669); border-color:#10b981; color:#fff;
+    }
+    .step-label{ font-size:.72rem; color:#94a3b8; margin-top:8px; font-weight:500; white-space:nowrap; }
+    .form-progress-step.active .step-label{ color:#3b82f6; font-weight:700; }
+    .form-progress-step.completed .step-label{ color:#10b981; font-weight:600; }
+    .form-progress-line{
+      height:3px; flex:1; background: rgba(59,130,246,.10); position:relative; top:22px;
+      border-radius:3px; min-width:20px;
+    }
+    .form-progress-line.filled{ background: linear-gradient(90deg,#10b981,#3b82f6); }
 
-    .glass-card {
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-radius: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.9);
-      box-shadow: 0 8px 32px rgba(59, 130, 246, 0.06), 0 1px 3px rgba(0,0,0,0.04);
-      transition: all 0.2s ease;
-    }
+    .form-step{ display:none; }
+    .form-step.active{ display:block; }
 
-    .badge {
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-      color: #fff;
-      font-weight: 600;
-      padding: 4px 16px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+    .radio-card-group{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    .radio-card{ position:relative; cursor:pointer; }
+    .radio-card input{ position:absolute; opacity:0; pointer-events:none; }
+    .radio-content{
+      display:flex; align-items:center; gap:12px; padding:18px 20px;
+      background: rgba(255,255,255,.55); border:2px solid rgba(59,130,246,.08);
+      border-radius:16px; transition:.2s ease; font-weight:500; color:#475569;
     }
+    .radio-card input:checked + .radio-content{
+      border-color:#3b82f6; background: rgba(59,130,246,.07); color:#1d4ed8;
+      box-shadow: 0 4px 18px rgba(59,130,246,.12);
+    }
+    .radio-dot{
+      width:22px; height:22px; border-radius:50%; border:2.5px solid #cbd5e1;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    }
+    .radio-card input:checked + .radio-content .radio-dot{ border-color:#3b82f6; background:#3b82f6; }
+    .radio-card input:checked + .radio-content .radio-dot::after{ content:''; width:8px; height:8px; border-radius:50%; background:#fff; }
 
-    .fade-in {
-      opacity: 0;
-      transform: translateY(24px);
-      transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    .check-card{ position:relative; cursor:pointer; }
+    .check-card input{ position:absolute; opacity:0; pointer-events:none; }
+    .check-content{
+      display:flex; align-items:center; gap:12px; padding:18px 20px;
+      background: rgba(255,255,255,.55); border:2px solid rgba(59,130,246,.08);
+      border-radius:16px; transition:.2s ease; font-weight:500; color:#475569;
     }
-    .fade-in.visible { opacity: 1; transform: translateY(0); }
+    .check-card input:checked + .check-content{
+      border-color:#3b82f6; background: rgba(59,130,246,.07); color:#1d4ed8;
+      box-shadow: 0 4px 18px rgba(59,130,246,.12);
+    }
+    .check-box{
+      width:22px; height:22px; border-radius:8px; border:2.5px solid #cbd5e1;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    }
+    .check-card input:checked + .check-content .check-box{ border-color:#3b82f6; background:#3b82f6; }
+    .check-card input:checked + .check-content .check-box::after{ content:'✓'; color:#fff; font-size:13px; font-weight:800; }
 
-    .apple-emoji, .apple-emoji-lg {
-      display: inline-flex;
-      align-items: center;
-      vertical-align: middle;
-      line-height: 1;
+    .form-input,.form-textarea{
+      width:100%; padding:18px 20px; background: rgba(255,255,255,.6);
+      border:2px solid rgba(59,130,246,.08); border-radius:16px;
+      font-size:1rem; color:#1e293b; outline:none; direction:rtl; line-height:1.8;
     }
-    .apple-emoji-img { display: inline-block; object-fit: contain; pointer-events: none; user-select: none; }
-
-    .blob {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(80px);
-      opacity: 0.4;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .blob-1 {
-      width: 500px;
-      height: 500px;
-      background: rgba(59, 130, 246, 0.15);
-      top: -100px;
-      right: -150px;
-      animation: float1 20s ease-in-out infinite;
-    }
-    .blob-2 {
-      width: 400px;
-      height: 400px;
-      background: rgba(29, 78, 216, 0.1);
-      bottom: 20%;
-      left: -100px;
-      animation: float2 25s ease-in-out infinite;
-    }
-    @keyframes float1 {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      25% { transform: translate(-60px, 40px) scale(1.1); }
-      50% { transform: translate(-30px, 80px) scale(0.95); }
-      75% { transform: translate(40px, 30px) scale(1.05); }
-    }
-    @keyframes float2 {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      33% { transform: translate(50px, -40px) scale(1.08); }
-      66% { transform: translate(-20px, -70px) scale(0.92); }
-    }
-
-    .form-progress {
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      gap: 0;
-      margin-bottom: 2.5rem;
-    }
-    .form-progress-step {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
-      flex: 0 0 auto;
-      z-index: 2;
-    }
-    .form-progress-step .step-circle {
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      background: rgba(59, 130, 246, 0.08);
-      border: 2.5px solid rgba(59, 130, 246, 0.15);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 0.95rem;
-      color: #94a3b8;
-      transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    .form-progress-step.active .step-circle {
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-      border-color: #3b82f6;
-      color: #fff;
-      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
-      transform: scale(1.1);
-    }
-    .form-progress-step.completed .step-circle {
-      background: linear-gradient(135deg, #10b981, #059669);
-      border-color: #10b981;
-      color: #fff;
-      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
-    }
-    .form-progress-step .step-label {
-      font-size: 0.72rem;
-      color: #94a3b8;
-      margin-top: 8px;
-      text-align: center;
-      transition: all 0.3s ease;
-      white-space: nowrap;
-      font-weight: 500;
-    }
-    .form-progress-step.active .step-label { color: #3b82f6; font-weight: 700; }
-    .form-progress-step.completed .step-label { color: #10b981; font-weight: 600; }
-
-    .form-progress-line {
-      height: 3px;
-      flex: 1;
-      background: rgba(59, 130, 246, 0.1);
-      position: relative;
-      top: 22px;
-      z-index: 1;
-      border-radius: 3px;
-      min-width: 20px;
-      transition: background 0.4s ease;
-    }
-    .form-progress-line.filled { background: linear-gradient(90deg, #10b981, #3b82f6); }
-
-    .form-step { display: none; }
-    .form-step.active {
-      display: block;
-      animation: formFadeIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    @keyframes formFadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    .form-textarea{ min-height:130px; resize:vertical; }
+    .form-input:focus,.form-textarea:focus{
+      border-color:#3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,.08); background: rgba(255,255,255,.85);
     }
 
-    .radio-card-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .radio-card { position: relative; cursor: pointer; }
-    .radio-card input { position: absolute; opacity: 0; pointer-events: none; }
-    .radio-card .radio-content {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 18px 20px;
-      background: rgba(255, 255, 255, 0.55);
-      border: 2px solid rgba(59, 130, 246, 0.08);
-      border-radius: 16px;
-      transition: all 0.2s ease;
-      font-weight: 500;
-      color: #475569;
-      font-size: 0.95rem;
+    .form-label{ display:block; font-weight:700; color:#334155; margin-bottom:14px; font-size:1.05rem; }
+    .form-group-title{
+      font-size:1.35rem; font-weight:700; color:#1e293b; margin-bottom:28px;
+      display:flex; align-items:center; gap:10px; padding-bottom:16px;
+      border-bottom:2px solid rgba(59,130,246,.08);
     }
-    .radio-card .radio-content:hover {
-      border-color: rgba(59, 130, 246, 0.25);
-      background: rgba(255, 255, 255, 0.75);
-      transform: translateY(-1px);
+    .form-counter{
+      display:inline-flex; align-items:center; gap:4px; font-size:.8rem; color:#94a3b8; font-weight:500;
+      background: rgba(59,130,246,.05); padding:4px 12px; border-radius:20px;
     }
-    .radio-card input:checked + .radio-content {
-      border-color: #3b82f6;
-      background: rgba(59, 130, 246, 0.07);
-      color: #1d4ed8;
-      box-shadow: 0 4px 18px rgba(59, 130, 246, 0.12);
-    }
-    .radio-card .radio-dot {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      border: 2.5px solid #cbd5e1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: all 0.2s ease;
-    }
-    .radio-card input:checked + .radio-content .radio-dot { border-color: #3b82f6; background: #3b82f6; }
-    .radio-card input:checked + .radio-content .radio-dot::after {
-      content: '';
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: white;
-    }
+    .form-counter strong{ color:#3b82f6; font-weight:700; }
 
-    .check-card { position: relative; cursor: pointer; }
-    .check-card input { position: absolute; opacity: 0; pointer-events: none; }
-    .check-card .check-content {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 18px 20px;
-      background: rgba(255, 255, 255, 0.55);
-      border: 2px solid rgba(59, 130, 246, 0.08);
-      border-radius: 16px;
-      transition: all 0.2s ease;
-      font-weight: 500;
-      color: #475569;
-      font-size: 0.95rem;
+    .form-btn{
+      padding:14px 32px; border-radius:14px; font-weight:600; font-size:1rem; cursor:pointer;
+      transition:.2s ease; border:none; display:inline-flex; align-items:center; gap:8px;
     }
-    .check-card .check-content:hover {
-      border-color: rgba(59, 130, 246, 0.25);
-      background: rgba(255, 255, 255, 0.75);
-      transform: translateY(-1px);
-    }
-    .check-card input:checked + .check-content {
-      border-color: #3b82f6;
-      background: rgba(59, 130, 246, 0.07);
-      color: #1d4ed8;
-      box-shadow: 0 4px 18px rgba(59, 130, 246, 0.12);
-    }
-    .check-card .check-box {
-      width: 22px;
-      height: 22px;
-      border-radius: 8px;
-      border: 2.5px solid #cbd5e1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: all 0.2s ease;
-    }
-    .check-card input:checked + .check-content .check-box { border-color: #3b82f6; background: #3b82f6; }
-    .check-card input:checked + .check-content .check-box::after {
-      content: '✓';
-      color: white;
-      font-size: 13px;
-      font-weight: 800;
-      line-height: 1;
-    }
+    .form-btn-next{ background: linear-gradient(135deg,#3b82f6,#1d4ed8); color:#fff; }
+    .form-btn-prev{ background: rgba(59,130,246,.06); color:#3b82f6; border:1.5px solid rgba(59,130,246,.12); }
+    .form-btn-send{ background: linear-gradient(135deg,#10b981,#059669); color:#fff; padding:16px 48px; font-size:1.1rem; }
 
-    .form-textarea, .form-input {
-      width: 100%;
-      padding: 18px 20px;
-      background: rgba(255, 255, 255, 0.6);
-      border: 2px solid rgba(59, 130, 246, 0.08);
-      border-radius: 16px;
-      font-size: 1rem;
-      color: #1e293b;
-      transition: all 0.2s ease;
-      outline: none;
-      direction: rtl;
-      line-height: 1.8;
-    }
-    .form-textarea { min-height: 130px; resize: vertical; }
-    .form-textarea:focus, .form-input:focus {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.08);
-      background: rgba(255, 255, 255, 0.85);
-    }
-    .form-textarea::placeholder, .form-input::placeholder { color: #94a3b8; line-height: 1.8; }
-
-    .form-btn {
-      padding: 14px 32px;
-      border-radius: 14px;
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      border: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .form-btn-next {
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-      color: white;
-      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
-    }
-    .form-btn-next:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4); }
-    .form-btn-prev {
-      background: rgba(59, 130, 246, 0.06);
-      color: #3b82f6;
-      border: 1.5px solid rgba(59, 130, 246, 0.12);
-    }
-    .form-btn-prev:hover { background: rgba(59, 130, 246, 0.12); }
-    .form-btn-send {
-      background: linear-gradient(135deg, #10b981, #059669);
-      color: white;
-      box-shadow: 0 4px 18px rgba(16, 185, 129, 0.3);
-      padding: 16px 48px;
-      font-size: 1.1rem;
-    }
-    .form-btn-send:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4); }
-
-    .form-label { display: block; font-weight: 700; color: #334155; margin-bottom: 14px; font-size: 1.05rem; }
-    .form-hint { font-size: 0.82rem; color: #94a3b8; margin-top: 8px; line-height: 1.6; }
-    .form-group-title {
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: #1e293b;
-      margin-bottom: 28px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding-bottom: 16px;
-      border-bottom: 2px solid rgba(59, 130, 246, 0.08);
-    }
-    .form-counter {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.8rem;
-      color: #94a3b8;
-      font-weight: 500;
-      background: rgba(59,130,246,0.05);
-      padding: 4px 12px;
-      border-radius: 20px;
-    }
-    .form-counter strong { color: #3b82f6; font-weight: 700; }
-
-    @media (max-width: 640px) {
-      .radio-card-group { grid-template-columns: 1fr; }
-      .form-progress-step .step-label { font-size: 0.58rem; }
-      .form-progress-step .step-circle { width: 38px; height: 38px; font-size: 0.85rem; }
-      .form-progress-line { top: 18px; }
-      .form-btn { padding: 12px 20px; font-size: 0.9rem; }
+    @media (max-width:640px){
+      .radio-card-group{ grid-template-columns:1fr; }
+      .step-circle{ width:38px; height:38px; }
+      .form-progress-line{ top:18px; }
+      .form-btn{ padding:12px 20px; font-size:.9rem; }
     }
   </style>
 </head>
@@ -356,20 +135,18 @@
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
 
-  <main class="w-full max-w-4xl px-4 md:px-6 relative z-10 fade-in visible">
+  <main class="w-full max-w-4xl px-4 md:px-6 relative z-10">
     <div class="glass-card p-6 md:p-10">
 
       <div class="text-center mb-10">
         <span class="badge mb-4 inline-block">نموذج تفاعلي</span>
-        <h1 class="text-3xl font-bold text-blue-700 mb-3 text-glow">
-          <span class="apple-emoji-lg">📝</span> استبيان أسلوب المونتاج
-        </h1>
+        <h1 class="text-3xl font-bold text-blue-700 mb-3">📝 استبيان أسلوب المونتاج</h1>
         <p class="text-slate-500 text-lg max-w-2xl mx-auto leading-relaxed">
-          هذا هو الاستبيان الذي يُرسل لك قبل البدء بأي مشروع. يرجى تعبئته لمساعدتنا على فهم رؤيتك بدقة.
+          يرجى تعبئة هذا الاستبيان لمساعدتنا على فهم رؤيتك بدقة قبل البدء بالمشروع.
         </p>
       </div>
 
-      <div class="form-progress" id="formProgress">
+      <div class="form-progress">
         <div class="form-progress-step active" data-pstep="1">
           <div class="step-circle">1</div>
           <div class="step-label">التفضيلات</div>
@@ -400,28 +177,20 @@
         <span class="form-counter">الخطوة <strong id="stepCurrent">1</strong> من <strong>5</strong></span>
       </div>
 
-      <!-- ✅ Connected to your Formspree endpoint -->
+      <!-- ✅ Formspree connected + redirect to your GitHub Pages thanks page -->
       <form id="editStyleForm" action="https://formspree.io/f/mnjbrkdo" method="POST">
-        <!-- Optional: customize email subject -->
         <input type="hidden" name="_subject" value="📥 استبيان أسلوب المونتاج - رد جديد">
-
-        <!-- Optional: redirect after submit (uncomment & put your URL) -->
-        <!-- <input type="hidden" name="_redirect" value="https://YOURNAME.github.io/REPO/thanks.html"> -->
-
-        <!-- Make "Reply" go to client's email -->
         <input type="hidden" name="_replyto" value="%{email}">
-
-        <!-- Anti-spam -->
+        <input type="hidden" name="_redirect" value="https://aminellkadaoui.github.io/form/thanks.html">
         <input type="text" name="_gotcha" style="display:none">
 
         <!-- ===== STEP 1 ===== -->
         <div class="form-step active" data-fstep="1">
-          <div class="form-group-title"><span class="apple-emoji">🎨</span> تفضيلات أسلوب المونتاج</div>
+          <div class="form-group-title">🎨 تفضيلات أسلوب المونتاج</div>
 
           <div class="mb-7">
             <label class="form-label">بريدك الإلكتروني للتواصل</label>
             <input class="form-input" type="email" name="email" placeholder="example@email.com" required>
-            <div class="form-hint">سنستخدمه فقط للرد على الاستبيان.</div>
           </div>
 
           <div class="mb-7">
@@ -429,11 +198,11 @@
             <div class="radio-card-group">
               <label class="radio-card">
                 <input type="radio" name="pace" value="fast-paced" required>
-                <div class="radio-content"><span class="radio-dot"></span><span><span class="apple-emoji">⚡</span> سريع الإيقاع</span></div>
+                <div class="radio-content"><span class="radio-dot"></span><span>⚡ سريع الإيقاع</span></div>
               </label>
               <label class="radio-card">
                 <input type="radio" name="pace" value="calm" required>
-                <div class="radio-content"><span class="radio-dot"></span><span><span class="apple-emoji">🍃</span> هادئ ومريح</span></div>
+                <div class="radio-content"><span class="radio-dot"></span><span>🍃 هادئ ومريح</span></div>
               </label>
             </div>
           </div>
@@ -443,39 +212,39 @@
             <div class="radio-card-group">
               <label class="radio-card">
                 <input type="radio" name="polish" value="natural" required>
-                <div class="radio-content"><span class="radio-dot"></span><span><span class="apple-emoji">🌿</span> طبيعي وخام</span></div>
+                <div class="radio-content"><span class="radio-dot"></span><span>🌿 طبيعي وخام</span></div>
               </label>
               <label class="radio-card">
                 <input type="radio" name="polish" value="polished" required>
-                <div class="radio-content"><span class="radio-dot"></span><span><span class="apple-emoji">✨</span> مصقول واحترافي</span></div>
+                <div class="radio-content"><span class="radio-dot"></span><span>✨ مصقول واحترافي</span></div>
               </label>
             </div>
           </div>
 
           <div class="mb-7">
-            <label class="form-label">النصوص والعناوين على الشاشة</label>
+            <label class="form-label">النصوص على الشاشة</label>
             <div class="radio-card-group">
               <label class="radio-card">
                 <input type="radio" name="captions" value="text-heavy" required>
-                <div class="radio-content"><span class="radio-dot"></span><span><span class="apple-emoji">📝</span> نصوص وعناوين كثيرة</span></div>
+                <div class="radio-content"><span class="radio-dot"></span><span>📝 نصوص كثيرة</span></div>
               </label>
               <label class="radio-card">
                 <input type="radio" name="captions" value="minimal-text" required>
-                <div class="radio-content"><span class="radio-dot"></span><span><span class="apple-emoji">💬</span> نصوص قليلة وبسيطة</span></div>
+                <div class="radio-content"><span class="radio-dot"></span><span>💬 نصوص قليلة</span></div>
               </label>
             </div>
           </div>
 
           <div class="mb-7">
-            <label class="form-label">أسلوب القطع والانتقالات</label>
+            <label class="form-label">أسلوب القطع</label>
             <div class="radio-card-group">
               <label class="radio-card">
                 <input type="radio" name="cuts" value="more-cuts" required>
-                <div class="radio-content"><span class="radio-dot"></span><span><span class="apple-emoji">✂️</span> قطعات أكثر وأسرع</span></div>
+                <div class="radio-content"><span class="radio-dot"></span><span>✂️ قطعات أكثر</span></div>
               </label>
               <label class="radio-card">
                 <input type="radio" name="cuts" value="longer-shots" required>
-                <div class="radio-content"><span class="radio-dot"></span><span><span class="apple-emoji">🎞️</span> لقطات أطول ومتصلة</span></div>
+                <div class="radio-content"><span class="radio-dot"></span><span>🎞️ لقطات أطول</span></div>
               </label>
             </div>
           </div>
@@ -485,108 +254,108 @@
             <div class="radio-card-group">
               <label class="radio-card">
                 <input type="radio" name="sfx" value="sound-effects" required>
-                <div class="radio-content"><span class="radio-dot"></span><span><span class="apple-emoji">🔊</span> مؤثرات صوتية</span></div>
+                <div class="radio-content"><span class="radio-dot"></span><span>🔊 مؤثرات صوتية</span></div>
               </label>
               <label class="radio-card">
                 <input type="radio" name="sfx" value="no-sound-effects" required>
-                <div class="radio-content"><span class="radio-dot"></span><span><span class="apple-emoji">🔇</span> بدون مؤثرات صوتية</span></div>
+                <div class="radio-content"><span class="radio-dot"></span><span>🔇 بدون</span></div>
               </label>
             </div>
           </div>
 
           <div class="mb-7">
-            <label class="form-label">نوع المحتوى البصري المفضّل</label>
+            <label class="form-label">نوع المحتوى البصري</label>
             <div class="radio-card-group">
               <label class="radio-card">
                 <input type="radio" name="visual" value="b-roll" required>
-                <div class="radio-content"><span class="radio-dot"></span><span><span class="apple-emoji">🎬</span> مقاطع B-roll متنوعة</span></div>
+                <div class="radio-content"><span class="radio-dot"></span><span>🎬 B-roll</span></div>
               </label>
               <label class="radio-card">
                 <input type="radio" name="visual" value="talking-head" required>
-                <div class="radio-content"><span class="radio-dot"></span><span><span class="apple-emoji">🗣️</span> المتحدث أمام الكاميرا فقط</span></div>
+                <div class="radio-content"><span class="radio-dot"></span><span>🗣️ متحدث مباشر</span></div>
               </label>
             </div>
           </div>
 
           <div class="mb-4">
-            <label class="form-label"><span class="apple-emoji">💭</span> صف الأسلوب الذي تتخيله</label>
-            <textarea class="form-textarea" name="style_description" rows="5" placeholder="اكتب هنا وصفاً حراً للأسلوب الذي تتخيله لفيديوهاتك..."></textarea>
+            <label class="form-label">💭 صف الأسلوب الذي تتخيله</label>
+            <textarea class="form-textarea" name="style_description" rows="5" placeholder="وصف حر..."></textarea>
           </div>
         </div>
 
         <!-- ===== STEP 2 ===== -->
         <div class="form-step" data-fstep="2">
-          <div class="form-group-title"><span class="apple-emoji">🚫</span> فيديوهات لا تعجبك</div>
+          <div class="form-group-title">🚫 فيديوهات لا تعجبك</div>
           <div class="mb-7">
-            <label class="form-label"><span class="apple-emoji">🔗</span> روابط الفيديوهات (1–3 روابط)</label>
-            <textarea class="form-textarea" name="dislike_links" rows="5" placeholder="الصق رابط كل فيديو في سطر منفصل..."></textarea>
+            <label class="form-label">🔗 روابط (1–3)</label>
+            <textarea class="form-textarea" name="dislike_links" rows="5" placeholder="كل رابط في سطر..."></textarea>
           </div>
           <div class="mb-4">
-            <label class="form-label"><span class="apple-emoji">❌</span> ما الذي لم يعجبك في هذه الفيديوهات؟</label>
-            <textarea class="form-textarea" name="dislike_reasons" rows="6" placeholder="اشرح ما الذي لا يعجبك في أسلوب هذه الفيديوهات..."></textarea>
+            <label class="form-label">❌ ما الذي لم يعجبك؟</label>
+            <textarea class="form-textarea" name="dislike_reasons" rows="6"></textarea>
           </div>
         </div>
 
         <!-- ===== STEP 3 ===== -->
         <div class="form-step" data-fstep="3">
-          <div class="form-group-title"><span class="apple-emoji">🎯</span> الفيديوهات المرجعية</div>
+          <div class="form-group-title">🎯 فيديوهات مرجعية</div>
           <div class="mb-7">
-            <label class="form-label"><span class="apple-emoji">🔗</span> روابط الفيديوهات المرجعية (3–5 روابط)</label>
-            <textarea class="form-textarea" name="reference_links" rows="7" placeholder="الصق رابط كل فيديو يعجبك في سطر منفصل..."></textarea>
+            <label class="form-label">🔗 روابط (3–5)</label>
+            <textarea class="form-textarea" name="reference_links" rows="7" placeholder="كل رابط في سطر..."></textarea>
           </div>
           <div class="mb-4">
-            <label class="form-label"><span class="apple-emoji">✅</span> ما الذي أعجبك في هذه الفيديوهات؟</label>
-            <textarea class="form-textarea" name="reference_reasons" rows="7" placeholder="اشرح لنا ما الذي يميز هذه الفيديوهات بالنسبة لك..."></textarea>
+            <label class="form-label">✅ ما الذي أعجبك؟</label>
+            <textarea class="form-textarea" name="reference_reasons" rows="7"></textarea>
           </div>
         </div>
 
         <!-- ===== STEP 4 ===== -->
         <div class="form-step" data-fstep="4">
-          <div class="form-group-title"><span class="apple-emoji">💫</span> الشعور المطلوب من المشاهد</div>
+          <div class="form-group-title">💫 الشعور المطلوب</div>
           <div class="mb-7">
-            <label class="form-label">ما الشعور الذي تريد أن يخرج به المشاهد بعد مشاهدة فيديوهاتك؟</label>
+            <label class="form-label">اختر ما يناسبك</label>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label class="check-card">
                 <input type="checkbox" name="feeling[]" value="motivation">
-                <div class="check-content"><span class="check-box"></span><span><span class="apple-emoji">🔥</span> تحفيز وإلهام</span></div>
+                <div class="check-content"><span class="check-box"></span><span>🔥 تحفيز</span></div>
               </label>
               <label class="check-card">
                 <input type="checkbox" name="feeling[]" value="trust">
-                <div class="check-content"><span class="check-box"></span><span><span class="apple-emoji">🤝</span> ثقة ومصداقية</span></div>
+                <div class="check-content"><span class="check-box"></span><span>🤝 ثقة</span></div>
               </label>
               <label class="check-card">
                 <input type="checkbox" name="feeling[]" value="professionalism">
-                <div class="check-content"><span class="check-box"></span><span><span class="apple-emoji">💼</span> احترافية وجدية</span></div>
+                <div class="check-content"><span class="check-box"></span><span>💼 احترافية</span></div>
               </label>
               <label class="check-card">
                 <input type="checkbox" name="feeling[]" value="clarity">
-                <div class="check-content"><span class="check-box"></span><span><span class="apple-emoji">💡</span> وضوح وفهم</span></div>
+                <div class="check-content"><span class="check-box"></span><span>💡 وضوح</span></div>
               </label>
               <label class="check-card sm:col-span-2">
                 <input type="checkbox" name="feeling[]" value="simplicity">
-                <div class="check-content"><span class="check-box"></span><span><span class="apple-emoji">🎯</span> بساطة وسهولة</span></div>
+                <div class="check-content"><span class="check-box"></span><span>🎯 بساطة</span></div>
               </label>
             </div>
-            <div class="form-hint">يمكنك اختيار أكثر من خيار.</div>
           </div>
         </div>
 
         <!-- ===== STEP 5 ===== -->
         <div class="form-step" data-fstep="5">
-          <div class="form-group-title"><span class="apple-emoji">📌</span> ملاحظات إضافية</div>
+          <div class="form-group-title">📌 ملاحظات إضافية</div>
           <div class="mb-4">
-            <label class="form-label"><span class="apple-emoji">💬</span> هل هناك أي شيء آخر تريد إخبارنا به؟</label>
-            <textarea class="form-textarea" name="additional_notes" rows="10" placeholder="أي ملاحظات إضافية، طلبات خاصة، أو أي شيء آخر تريدنا أن نعرفه..."></textarea>
+            <label class="form-label">💬 أي شيء آخر؟</label>
+            <textarea class="form-textarea" name="additional_notes" rows="10"></textarea>
           </div>
         </div>
 
+        <!-- Buttons -->
         <div class="flex items-center justify-between mt-10 pt-6 border-t-2 border-blue-50">
           <div>
             <button type="button" class="form-btn form-btn-prev" id="formPrev" style="display:none" onclick="formGoStep(-1)">الخطوة السابقة</button>
           </div>
           <div>
             <button type="button" class="form-btn form-btn-next" id="formNext" onclick="formGoStep(1)">الخطوة التالية</button>
-            <button type="submit" class="form-btn form-btn-send" id="formSubmit" style="display:none"><span class="apple-emoji">📤</span> إرسال الاستبيان</button>
+            <button type="submit" class="form-btn form-btn-send" id="formSubmit" style="display:none">📤 إرسال الاستبيان</button>
           </div>
         </div>
       </form>
@@ -595,7 +364,7 @@
   </main>
 
   <script>
-    (function() {
+    (function(){
       let step = 1;
       const total = 5;
 
@@ -604,9 +373,9 @@
       const submitBtn = document.getElementById('formSubmit');
       const stepCurrentEl = document.getElementById('stepCurrent');
 
-      window.formGoStep = function(dir) {
+      window.formGoStep = function(dir){
         const next = step + dir;
-        if (next < 1 || next > total) return;
+        if(next < 1 || next > total) return;
 
         document.querySelector('.form-step[data-fstep="' + step + '"]').classList.remove('active');
         document.querySelector('.form-step[data-fstep="' + next + '"]').classList.add('active');
@@ -615,16 +384,16 @@
         refreshUI();
       };
 
-      function refreshUI() {
-        document.querySelectorAll('.form-progress-step').forEach(function(el) {
-          var s = parseInt(el.getAttribute('data-pstep'));
-          el.classList.remove('active', 'completed');
-          if (s === step) el.classList.add('active');
-          else if (s < step) el.classList.add('completed');
+      function refreshUI(){
+        document.querySelectorAll('.form-progress-step').forEach(function(el){
+          const s = parseInt(el.getAttribute('data-pstep'));
+          el.classList.remove('active','completed');
+          if(s === step) el.classList.add('active');
+          else if(s < step) el.classList.add('completed');
         });
 
-        document.querySelectorAll('.form-progress-line').forEach(function(el) {
-          var l = parseInt(el.getAttribute('data-line'));
+        document.querySelectorAll('.form-progress-line').forEach(function(el){
+          const l = parseInt(el.getAttribute('data-line'));
           el.classList.toggle('filled', l < step);
         });
 
@@ -633,84 +402,6 @@
         nextBtn.style.display = step === total ? 'none' : 'inline-flex';
         submitBtn.style.display = step === total ? 'inline-flex' : 'none';
       }
-    })();
-
-    (function() {
-      const CDN = 'https://cdn.jsdelivr.net/npm/emoji-datasource-apple@15.1.2/img/apple/64/';
-      const emojiRegex = /\p{Emoji_Presentation}[\uFE0E\uFE0F]?(?:\u200D[\p{Emoji_Presentation}\p{Extended_Pictographic}][\uFE0E\uFE0F]?)*|\p{Extended_Pictographic}\uFE0F(?:\u200D[\p{Emoji_Presentation}\p{Extended_Pictographic}][\uFE0E\uFE0F]?)*/gu;
-
-      function getCodePoints(emoji) {
-        const pts = [];
-        for (const char of emoji) {
-          const cp = char.codePointAt(0);
-          if (cp === 0xFE0E) continue;
-          pts.push(cp.toString(16));
-        }
-        return pts.join('-');
-      }
-
-      function processTextNodes(root) {
-        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-          acceptNode(node) {
-            const p = node.parentElement;
-            if (p && (p.tagName === 'SCRIPT' || p.tagName === 'STYLE' || p.tagName === 'TEXTAREA' || p.tagName === 'INPUT')) {
-              return NodeFilter.FILTER_REJECT;
-            }
-            return NodeFilter.FILTER_ACCEPT;
-          }
-        });
-
-        const nodes = [];
-        while (walker.nextNode()) nodes.push(walker.currentNode);
-
-        nodes.forEach(node => {
-          const text = node.textContent;
-          emojiRegex.lastIndex = 0;
-          if (!emojiRegex.test(text)) return;
-          emojiRegex.lastIndex = 0;
-
-          const frag = document.createDocumentFragment();
-          let lastIdx = 0;
-          let match;
-
-          while ((match = emojiRegex.exec(text)) !== null) {
-            if (match.index > lastIdx) frag.appendChild(document.createTextNode(text.slice(lastIdx, match.index)));
-
-            const img = document.createElement('img');
-            const cp = getCodePoints(match[0]);
-            img.src = CDN + cp + '.png';
-            img.alt = match[0];
-            img.draggable = false;
-            img.loading = 'lazy';
-            img.className = 'apple-emoji-img';
-
-            const parent = node.parentElement;
-            let sz = '1.2em';
-            if (parent && parent.classList.contains('apple-emoji-lg')) sz = '1.75em';
-            else if (parent && parent.classList.contains('apple-emoji')) sz = '1.35em';
-
-            img.style.cssText = 'display:inline-block;width:' + sz + ';height:' + sz + ';vertical-align:-0.15em;object-fit:contain;';
-
-            img.onerror = function() {
-              if (!this.dataset.fb) {
-                this.dataset.fb = '1';
-                if (this.src.includes('-fe0f')) this.src = this.src.replace(/-fe0f/g, '');
-                else this.src = this.src.replace('.png', '') + '-fe0f.png';
-              } else {
-                this.replaceWith(document.createTextNode(this.alt));
-              }
-            };
-
-            frag.appendChild(img);
-            lastIdx = match.index + match[0].length;
-          }
-
-          if (lastIdx < text.length) frag.appendChild(document.createTextNode(text.slice(lastIdx)));
-          if (lastIdx > 0) node.parentNode.replaceChild(frag, node);
-        });
-      }
-
-      processTextNodes(document.body);
     })();
   </script>
 </body>
